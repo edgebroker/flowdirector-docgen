@@ -11,6 +11,8 @@ import java.util.List;
 public class Generator {
     private static final String[] LINKREFHEADER = new String[]{"Direction", "Name", "Type", "Mandatory"};
     private static final String[] PROPHEADER = new String[]{"Name", "Description", "Mandatory", "Type", "Min", "Max", "Default", "Choices"};
+    private static final String GALLERYDIR = "fcgallery/";
+
     private static JsonObject load(File f) throws Exception {
         if (!f.exists())
             throw new Exception("File not found: " + f.getName());
@@ -19,6 +21,13 @@ public class Generator {
         reader.read(buffer);
         reader.close();
         return new JsonObject(new String(buffer));
+    }
+
+    private static void save(File file, JsonObject content) throws Exception {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+        writer.write(content.encodePrettily());
+        writer.flush();
+        writer.close();
     }
 
     private static File getDescriptor(File dir) {
@@ -186,6 +195,7 @@ public class Generator {
     }
 
     private static void flush(File file, List<String> elements) throws Exception {
+        file.getParentFile().mkdirs();
         BufferedWriter writer = new BufferedWriter(new FileWriter(file));
         for (String element : elements) {
             writer.write(element);
@@ -198,18 +208,23 @@ public class Generator {
     public static void main(String[] args) throws Exception {
         String inputDir = args[0];
         String outputDir = args[1];
-        String siteBarsFile = args[2];
+        String sideBarsFile = args[2];
         File[] libs = new File(inputDir).listFiles();
         if (libs == null)
             throw new Exception("No libs found here: " + inputDir);
+        JsonArray gallery = new JsonArray();
         Arrays.sort(libs);
         for (File lib : libs) {
             if (!lib.getName().equals("Subflows") && !lib.getName().startsWith(".DS_Store") && lib.isDirectory()) {
                 List<String> elements = new ArrayList<>();
                 String name = lib.getName().replaceAll(" ", "_") + "_comp";
-                page(lib, name + ".md", lib.getName() + " Components", elements);
-                flush(new File(outputDir + File.separatorChar + name + ".md"), elements);
+                page(lib, name, lib.getName() + " Components", elements);
+                flush(new File(outputDir + File.separatorChar+GALLERYDIR + name + ".md"), elements);
+                gallery.add(GALLERYDIR+name);
             }
         }
+        JsonObject sideBars = load(new File(sideBarsFile));
+        sideBars.getJsonObject("docs").put("Flow Component Gallery", gallery);
+        save(new File(sideBarsFile), sideBars);
     }
 }
