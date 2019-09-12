@@ -79,7 +79,7 @@ public class Generator {
     private static void tablerow(String[] values, boolean even, List<String> elements) {
         elements.add("<tr class=\""+(even?"even":"odd")+"\">");
         for (String v : values) {
-            elements.add("<td>`"+v+"`</td>");
+            elements.add("<td>"+v+"</td>");
         }
         elements.add("</tr>");
     }
