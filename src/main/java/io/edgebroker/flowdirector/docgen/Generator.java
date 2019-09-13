@@ -135,7 +135,9 @@ public class Generator {
             for (int i=0;i<props.size();i++){
                 JsonObject ele = props.getJsonObject(i);
                 String pname = ele.getString("label");
-                String pdescription = ele.getString("description");
+                String pdescription = "";
+                if (ele.getString("description") != null)
+                    pdescription = ele.getString("description");
                 String ptype = ele.getString("type");
                 boolean mandatory = false;
                 if (ele.getBoolean("mandatory") != null)
